@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.edu.board">
+
+	<!-- 제일 큰 게시글 번호를 가져오기 -->
+	<select id="maxBno" resultType="java.lang.Integer">
+		<![CDATA[
+			SELECT MAX(bno) FROM board;
+		]]>
+	</select>
+	
+	<!-- 게시글 쓰기 OLD -->
+	<insert id="registerOLD" parameterType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			INSERT INTO
+			t_board (BNO,		SUBJECT,	CONTENT,	WRITER, 	REG_DATE,	READCOUNT)
+			VALUES	(#{bno},	#{subject}, #{content},	#{writer},	NOW(),		0);
+		]]>
+	</insert>
+	
+	<!-- 게시글 등록하기 -->
+	<insert id="insertBoard" parameterType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			INSERT INTO
+			t_board (BNO,		SUBJECT,	CONTENT,	WRITER, 	REG_DATE,	READCOUNT)
+			SELECT	IFNULL(MAX(BNO), 0)+1, #{subject}, #{content}, #{writer}, NOW(), 0 FROM t_board
+		]]>
+	</insert>
+	
+	<!-- 게시글 목록 가져오기 -->
+	<select id="listAll" resultType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			SELECT 	bno, subject, content, writer, reg_date, readCount
+			FROM	t_board
+			ORDER BY bno DESC
+		]]>
+	</select>
+	
+	<!-- 게시글 번호에 해당하는 게시글의 조회수를 1 증가 시키기 -->
+	<update id="updateReadCount" parameterType="int">
+		<![CDATA[
+			UPDATE	t_board
+			SET		readcount = readcount + 1
+			WHERE	bno = #{bno}
+		]]>
+	</update>
+
+	<!-- 게시글 번호에 해당하는 게시글 정보 추출하기 -->
+	<select id="detail" parameterType="int" resultType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			SELECT	bno, subject, content, writer, reg_date, readcount
+			FROM	t_board
+			WHERE	bno = #{bno}
+		]]>
+	</select>
+
+	<!-- 게시글 번호에 해당하는 자료 삭제하기 -->
+	<delete id="delete" parameterType="int">
+		<![CDATA[
+			DELETE 	FROM	t_board
+			WHERE	bno = #{bno}
+		]]>
+	</delete>
+	
+	<!-- 게시글 번호에 해당하는 게시글 내용(제목, 글쓴이, 내용)을 수정하기 -->
+	<update id="update">
+		<![CDATA[
+			UPDATE	t_board
+			SET		subject = #{subject}, writer = #{writer}, content = #{content}
+			WHERE	bno = #{bno}
+		]]>
+	</update>
+	
+	<!-- ****************************************************************************************** -->
+	<!-- 전체 게시글 총 건수 가져오기 (Paging 1 처리) -->
+	<!-- ****************************************************************************************** -->
+	<select id="boardListTotalCount1" resultType="int">
+		<![CDATA[
+			SELECT	COUNT(*)
+			FROM	T_BOARD
+		]]>
+	</select>
+	
+	<!-- ****************************************************************************************** -->
+	<!-- 전체 게시글 내용 가져오기 (Paging 1 처리) 						-->
+	<!-- 요청된 페이지에 대한 게시글 목록을 요청된 개수만큼 찾아오기 	-->
+	<!-- ****************************************************************************************** -->
+	<select id="boardListPaging1" parameterType="hashmap" resultType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			SELECT	*
+			FROM	t_board
+			ORDER BY bno DESC
+			LIMIT #{startRow}, #{pageSize}
+		]]>
+	</select>
+
+	<!-- ****************************************************************************************** -->
+	<!-- 전체 게시글 총 건수 가져오기 (Paging 2 처리) -->
+	<!-- ****************************************************************************************** -->
+	<select id="boardListTotalCount2" parameterType="com.edu.common.util.Criteria" resultType="Integer">
+		<![CDATA[
+			SELECT	COUNT(*)
+			FROM	t_board
+			WHERE	1=1
+		]]>
+	</select>
+
+	<!-- ****************************************************************************************** -->
+	<!-- 요청된 페이지에 해당하는 게시글 목록을 가져온다. (Paging 2 처리) -->
+	<!-- ****************************************************************************************** -->
+	<select id="boardListPaging2" parameterType="hashmap" resultType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			SELECT	BNO, SUBJECT, CONTENT, WRITER, REG_DATE, READCOUNT
+			FROM (
+					SELECT 	BNO, SUBJECT, CONTENT, WRITER, REG_DATE, READCOUNT,
+							ROW_NUMBER() OVER(ORDER BY bno DESC) AS rNum
+					FROM	t_board
+				) brd
+			WHERE	rNum 	BETWEEN 1 + (#{perPageNum} * (#{page}-1) )
+							AND		#{perPageNum}*#{page}
+			ORDER BY bno DESC
+		]]>
+						<!-- AND 	#{perPageNum} + (#{perPageNum} * (#{page}-1) -->
+	</select>
+
+	<!-- ****************************************************************************************** -->
+	<!-- 조건에 해당하는 게시글 건수 가져오기 (Paging 3 처리) -->
+	<!-- ****************************************************************************************** -->
+	<select id="boardListTotalCountSearchType" parameterType="com.edu.common.util.SearchCriteria" resultType="Integer">
+		<![CDATA[
+			SELECT	COUNT(*)	FROM t_board
+			WHERE	1=1
+		]]>
+			<include refid="searchMySQL"/>
+	</select>
+	
+	<!-- 검색 조건 -->
+	<!-- MySQL -->
+	<sql id="searchMySQL">
+		<if test="searchType != null">
+			<if test="searchType == 's'.toString()">AND subject LIKE CONCAT('%', #{keyword}, '%')</if>
+			<if test="searchType == 'c'.toString()">AND content LIKE CONCAT('%', #{keyword}, '%')</if>
+			<if test="searchType == 'w'.toString()">AND writer  LIKE CONCAT('%', #{keyword}, '%')</if>
+		</if>
+	</sql>
+
+	<!-- Oracle -->
+	<sql id="searchOracle">
+		<if test="searchType != null">
+			<if test="searchType == 's'.toString()">AND subject LIKE '%' || #{keyword} || '%'</if>
+			<if test="searchType == 'c'.toString()">AND content LIKE '%' || #{keyword} || '%'</if>
+			<if test="searchType == 'w'.toString()">AND writer  LIKE '%' || #{keyword} || '%'</if>
+		</if>
+			<!-- WHERE COLUMN_NAME LIKE '%'||#{searchKeyword}||'%' -->
+	</sql>
+
+	<!-- ****************************************************************************************** -->
+	<!-- 조건에 해당하는 게시글 목록 가져오기 (Paging 3 처리) -->
+	<!-- ****************************************************************************************** -->
+	<select id="boardListPagingSearchType" parameterType="hashmap" resultType="com.edu.board.dto.BoardDTO">
+		<![CDATA[
+			SELECT	BNO, SUBJECT, CONTENT, WRITER, REG_DATE, READCOUNT
+			FROM (
+					SELECT	BNO, SUBJECT, CONTENT, WRITER, REG_DATE, READCOUNT,
+							ROW_NUMBER() OVER(ORDER BY bno DESC) AS rNum
+					FROM	T_BOARD
+					WHERE	1=1
+		]]>
+			<include refid="searchMySQL"/>
+		<![CDATA[
+			) brd
+			WHERE	rNum 	BETWEEN 1 + (#{perPageNum} * (#{page}-1) )
+							AND		#{perPageNum}*#{page}
+			ORDER BY bno DESC
+		]]>
+	</select>
+
+
+</mapper>   
+
+
+
+
+

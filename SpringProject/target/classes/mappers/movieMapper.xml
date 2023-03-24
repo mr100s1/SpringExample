@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.edu.movie.mappers.movieMapper">
+
+	<!-- 좌석 리스트 추출하기 -->
+	<select id="seatList" parameterType="int" resultType="com.edu.movie.dto.SeatDTO">
+		<![CDATA[
+			SELECT * FROM RESERVATION_SEAT WHERE movieID = #{movieID} ORDER BY seatID
+		]]>
+	</select>
+	
+	<!-- 좌석 예약 처리하기 -->
+	<!-- 영화 아이디와 사용자 아이디는 임의로 지정해서 저장한다. -->
+	<insert id="insertSeatID" parameterType="int">
+		<![CDATA[
+			INSERT INTO RESERVATION_SEAT
+			VALUES (1, 'a400', #{seatID})
+		]]>
+	</insert>
+	
+	<!-- 예약된 좌석 수를 알아내기 -->
+	<select id="reserveCount" resultType="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM RESERVATION_SEAT
+		]]>
+	</select>
+
+</mapper>   
+
+
+
+
+

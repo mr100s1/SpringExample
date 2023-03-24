@@ -1,0 +1,21 @@
+CREATE SCHEMA `jspdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+
+
+CREATE TABLE `jspdb`.`t_member` (
+  `id` VARCHAR(20) NOT NULL,
+  `pwd` VARCHAR(20) NULL,
+  `name` VARCHAR(40) NULL,
+  `email` VARCHAR(100) NULL,
+  `joinDate` DATETIME NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+alter table t_member modify id 		varchar(20);
+alter table t_member modify name 	varchar(20);
+alter table t_member modify email 	varchar(100);
+
+
+
+

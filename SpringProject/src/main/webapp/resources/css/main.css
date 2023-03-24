@@ -1,0 +1,11 @@
+@charset "UTF-8";
+
+nav {
+	position: fixed;
+	margin-top: 50px;
+	margin-left: 10px;
+	padding: 10px;
+	height: 50%;
+	
+	background-color: #FFF;
+}
