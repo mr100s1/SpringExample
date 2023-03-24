@@ -10,13 +10,13 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>	
 
 <!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KXLMDLBJMM"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7G0VHPCRPT"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-KXLMDLBJMM');
+  gtag('config', 'G-7G0VHPCRPT');
 </script></head>
 
 <%
